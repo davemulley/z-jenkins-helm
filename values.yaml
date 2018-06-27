@@ -10,14 +10,14 @@
 
 Master:
   Name: jenkins-master
-  Image: "dc1cp01.icp:8500/default/jenkins"
-  ImageTag: June2018.2
+  Image: "dc1cp01.icp:8500/default/z-jenkins"
+  ImageTag: 0.3
   ImagePullPolicy: "Always"
 # ImagePullSecret: jenkins
   Component: "jenkins-master"
   UseSecurity: true
   AdminUser: admin
-  # AdminPassword: <defaults to random>
+  AdminPassword: admin
   Cpu: "500m"
   Memory: "512Mi"
   # Environment variables that get added to the init container (useful for e.g. http_proxy)
@@ -49,13 +49,14 @@ Master:
   # Enable Kubernetes Liveness and Readiness Probes
   # ~ 2 minutes to allow Jenkins to restart when upgrading plugins. Set ReadinessTimeout to be shorter than LivenessTimeout.
   HealthProbes: true
-  HealthProbesLivenessTimeout: 90
-  HealthProbesReadinessTimeout: 60
+  HealthProbesLivenessTimeout: 610
+  HealthProbesReadinessTimeout: 600
   HealthProbeLivenessFailureThreshold: 12
   SlaveListenerPort: 50000
   DisabledAgentProtocols:
-    - JNLP-connect
-    - JNLP2-connect
+  #  - JNLP-connect
+  #  - JNLP2-connect
+    - JNLP4-connect
   CSRF:
     DefaultCrumbIssuer:
       Enabled: true
@@ -105,7 +106,7 @@ Master:
   # Node labels and tolerations for pod assignment
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
-  NodeSelector: {beta.kubernetes.io/arch: amd64}
+  NodeSelector: {beta.kubernetes.io/arch: s390x}
   Tolerations: {}
 
   Ingress:
@@ -121,8 +122,8 @@ Master:
 
 Agent:
   Enabled: true
-  Image: dc1cp01.icp:8500/default/jnlp-slave
-  ImageTag: latest
+  Image: dc1cp01.icp:8500/default/jnlp-z
+  ImageTag: 3.10-june2018.2
 # ImagePullSecret: jenkins
   Component: "jenkins-slave"
   Privileged: false
@@ -147,7 +148,7 @@ Persistence:
   ## A manually managed Persistent Volume and Claim
   ## Requires Persistence.Enabled: true
   ## If defined, PVC must be created manually before volume will be bound
-  # ExistingClaim: bcbs-jenkins-01
+  ExistingClaim: z-jenkins
 
   ## jenkins data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
@@ -160,7 +161,7 @@ Persistence:
 
   Annotations: {}
   AccessMode: ReadWriteOnce
-  Size: 8Gi
+  Size: 12Gi
   volumes:
     - name: cacerts
       secret:
